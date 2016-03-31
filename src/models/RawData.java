@@ -8,13 +8,13 @@ public class RawData {
     private int id;
     private String sex;
     private int age;
-    private int[] diseaseCode;
-    private char classInfo;
+    private String diseaseCode;
+    private String classInfo;
 
     public RawData() {
     }
 
-    public RawData(int id, String sex, int age, int[] diseaseCode, char classInfo) {
+    public RawData(int id, String sex, int age, String diseaseCode, String classInfo) {
         this.id = id;
         this.sex = sex;
         this.age = age;
@@ -46,19 +46,19 @@ public class RawData {
         this.age = age;
     }
 
-    public int[] getDiseaseCode() {
+    public String getDiseaseCode() {
         return diseaseCode;
     }
 
-    public void setDiseaseCode(int[] diseaseCode) {
+    public void setDiseaseCode(String diseaseCode) {
         this.diseaseCode = diseaseCode;
     }
 
-    public char getClassInfo() {
+    public String getClassInfo() {
         return classInfo;
     }
 
-    public void setClassInfo(char classInfo) {
+    public void setClassInfo(String classInfo) {
         this.classInfo = classInfo;
     }
 

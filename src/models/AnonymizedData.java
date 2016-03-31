@@ -5,16 +5,16 @@ package models;
  */
 public class AnonymizedData {
 
-    private int[] age; //just range of two values (15- 60)
+    private String age; //just range of two values (15- 60)
     private String sex;
     private String diseaseCode;
-    private char classInfo;
+    private String classInfo;
     private int count;
 
     public AnonymizedData() {
     }
 
-    public AnonymizedData(int[] age, String sex, String diseaseCode, char classInfo, int count) {
+    public AnonymizedData(String age, String sex, String diseaseCode, String classInfo, int count) {
         this.age = age;
         this.sex = sex;
         this.diseaseCode = diseaseCode;
@@ -22,12 +22,20 @@ public class AnonymizedData {
         this.count = count;
     }
 
-    public int[] getAge() {
+    public String getAge() {
         return age;
     }
 
-    public void setAge(int[] age) {
+    public void setAge(String age){
         this.age = age;
+    }
+
+    public void setAge(int[] age){
+        this.age = makeAge(age);
+    }
+
+    public static String makeAge(int[] age) {
+        return "[" + age[0] + "-" + age[1] + ")";
     }
 
     public String getSex() {
@@ -46,11 +54,11 @@ public class AnonymizedData {
         this.diseaseCode = diseaseCode;
     }
 
-    public char getClassInfo() {
+    public String getClassInfo() {
         return classInfo;
     }
 
-    public void setClassInfo(char classInfo) {
+    public void setClassInfo(String classInfo) {
         this.classInfo = classInfo;
     }
 
