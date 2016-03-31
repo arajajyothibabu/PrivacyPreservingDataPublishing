@@ -1,13 +1,22 @@
 package controllers;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by Araja Jyothi Babu on 29-Mar-16.
  */
 public class PPDP {
 
+    private static int ageRangeSize = 5;
+    private static int diseaseCodeRangeSize = 2;
 
+    public HashMap<String, String> anonymousDiseaseCode;
+
+    public PPDP(String diseaseCodes) throws Exception {
+        this.anonymousDiseaseCode = anonymousDiseaseCodes(sortedUniqueDiseaseCodes(diseaseCodes));
+    }
 
     public static int[] roundedMinMaxAge(int[] minMaxAgeFromDB){
         int[] minMax_Age = new int[2];
@@ -16,12 +25,34 @@ public class PPDP {
         return minMax_Age;
     }
 
-    public static int ageRangeSize(){
-        return 5;
+    public static String ageToRange(int age){
+        int min = age % ageRangeSize == 0? ageRangeSize : age % ageRangeSize;
+        return "[" + (age - min + 1) + "-" + (age + age % ageRangeSize) + ")";
     }
 
-    public static String ageToRange(int age, int rangeSize){
-        return "[" + (age - age % rangeSize) + "-" + (age + age % rangeSize) + ")";
+    public static ArrayList<String> sortedUniqueDiseaseCodes(String diseaseCodes) throws Exception {
+        String[] redundantCodes = diseaseCodes.split(",");
+        Set<String> uniqueCodes = new HashSet<String>();
+        for(String code : redundantCodes){
+            uniqueCodes.add(code);
+        }
+        TreeSet<String> sortedUniqueCodes = new TreeSet<String>(uniqueCodes);
+        ArrayList<String> sortedList = new ArrayList();
+        for(String code : sortedUniqueCodes)
+            sortedList.add(code);
+        return sortedList;
+    }
+
+    public static HashMap<String, String> anonymousDiseaseCodes(ArrayList<String> sortedDiseaseCodes) throws Exception {
+        HashMap<String, String> encodedDiseaseCodes = new HashMap<String, String>();
+        int i = 0, k = 0;
+        while(i < sortedDiseaseCodes.size()){
+            k++;
+            for(int j = 0; j < diseaseCodeRangeSize; j++){
+                encodedDiseaseCodes.put(sortedDiseaseCodes.get(i++), k + "*");
+            }
+        }
+        return encodedDiseaseCodes;
     }
 
 
