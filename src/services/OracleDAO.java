@@ -13,7 +13,7 @@ public class OracleDAO {
 
     public static boolean insertRawData(RawData rawData) throws Exception{
         Connection connection = DB.openConnection();
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO raw VALUES(?,?,?,?,?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO rawdata VALUES(?,?,?,?,?)");
         statement.setInt(1, rawData.getId());
         statement.setString(2, rawData.getSex());
         statement.setInt(3, rawData.getAge());
@@ -64,7 +64,7 @@ public class OracleDAO {
     public static ArrayList<RawData> getRawData() throws Exception {
         Connection connection = DB.openConnection();
         Statement statement = connection.createStatement();
-        ResultSet dataFromDB = statement.executeQuery("SELECT * from raw");
+        ResultSet dataFromDB = statement.executeQuery("SELECT * from rawdata");
         ArrayList<RawData> rawDataList = new ArrayList();
         while(dataFromDB.next()){
             rawDataList.add(Utils.makeRawData(dataFromDB));
@@ -88,7 +88,7 @@ public class OracleDAO {
     public static String getDiseaseCodes() throws Exception {
         Connection connection = DB.openConnection();
         Statement statement = connection.createStatement();
-        ResultSet codeFromDB = statement.executeQuery("SELECT DISTINCT(code) from raw");
+        ResultSet codeFromDB = statement.executeQuery("SELECT DISTINCT(code) from rawdata");
         StringBuilder diseaseCodes = new StringBuilder("");
         while(codeFromDB.next()){
             diseaseCodes.append(codeFromDB.getString(1) + ",");
@@ -100,7 +100,7 @@ public class OracleDAO {
     public static int[] getMinMaxAges() throws Exception {
         Connection connection = DB.openConnection();
         Statement statement = connection.createStatement();
-        ResultSet ageFromDB = statement.executeQuery("SELECT MIN(age), MAX(age) from raw");
+        ResultSet ageFromDB = statement.executeQuery("SELECT MIN(age), MAX(age) from rawdata");
         int[] minMaxAge = new int[2];
         if(ageFromDB.next()){
             minMaxAge[0] = ageFromDB.getInt(1);
