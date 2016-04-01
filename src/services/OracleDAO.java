@@ -37,6 +37,30 @@ public class OracleDAO {
         return isInserted;
     }
 
+    public static boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
+        Connection connection = DB.openConnection();
+        //check if already exists
+        Statement checkingStatement = connection.createStatement();
+        ResultSet existedData = checkingStatement.executeQuery("SELECT * FROM anonymous WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
+        boolean isUpdated = false;
+        if(existedData.next()){
+            Statement updateStatement = connection.createStatement();
+            int updated = updateStatement.executeUpdate("UPDATE anonymous SET count = '" + (existedData.getInt("count") + 1) + "' WHERE WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
+            if(updated > 0)
+                isUpdated = true;
+        }else {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO anonymous VALUES(?,?,?,?,?)");
+            statement.setString(1, data.getAge());
+            statement.setString(2, data.getSex());
+            statement.setString(3, data.getDiseaseCode());
+            statement.setString(4, data.getClassInfo());
+            statement.setInt(5, data.getCount());
+            isUpdated = statement.execute();
+        }
+        connection.close();
+        return isUpdated;
+    }
+
     public static ArrayList<RawData> getRawData() throws Exception {
         Connection connection = DB.openConnection();
         Statement statement = connection.createStatement();
