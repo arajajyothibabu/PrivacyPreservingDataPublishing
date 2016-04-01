@@ -112,7 +112,7 @@ public class ID3 {
         return infoGain;
     }
 
-    public static void learnData(ArrayList<AnonymizedData> data){
+    public static void learnData(ArrayList<AnonymizedData> data) throws Exception{
         ArrayList<AnonymizedSubData> ageModels = new ArrayList();
         ArrayList<AnonymizedSubData> sexModels = new ArrayList();
         ArrayList<AnonymizedSubData> codeModels = new ArrayList();
@@ -121,6 +121,11 @@ public class ID3 {
             sexModels.add(new AnonymizedSubData(row.getSex(), row.getClassInfo()));
             codeModels.add(new AnonymizedSubData(row.getDiseaseCode(), row.getClassInfo()));
         }
+        SortedMap<AttributeType, Double> informationGains = new TreeMap<AttributeType, Double>();
+        informationGains.put(AttributeType.AGE, informationGain(ageModels));
+        informationGains.put(AttributeType.SEX, informationGain(sexModels));
+        informationGains.put(AttributeType.CODE, informationGain(codeModels));
+        AttributeType root = informationGains.firstKey();
     }
 
 }
