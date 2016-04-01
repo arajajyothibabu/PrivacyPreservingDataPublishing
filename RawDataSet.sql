@@ -23,3 +23,7 @@ CREATE TABLE anonymous (
   count NUMBER(10),
   CONSTRAINT id PRIMARY KEY(age, sex, code, class)
 );
+
+/*Useful queries */
+dataPart = {age, sex, code, class};
+SELECT COUNT(dataPart)/(SELECT COUNT(dataPart) FROM rawdata) AS probability FROM rawdata WHERE dataPart='requiredValue' GROUP BY dataPart;
