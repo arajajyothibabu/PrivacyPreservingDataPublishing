@@ -1,4 +1,4 @@
-package controllers;
+package utils;
 
 import models.AnonymizedData;
 import models.RawData;
