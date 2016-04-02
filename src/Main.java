@@ -1,4 +1,5 @@
 import controllers.PPDP;
+import controllers.classification.ID3;
 
 /**
  * Created by Araja Jyothi Babu on 28-Mar-16.
@@ -9,7 +10,8 @@ public class Main {
 
         System.out.println("Application Started..!");
         PPDP ppdp = new PPDP();
-        ppdp.generateAnonymizedData();
+        ID3 id3 = new ID3(ppdp.generateAnonymizedData());
+        id3.processData();
     }
 
 }

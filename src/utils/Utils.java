@@ -6,6 +6,8 @@ import models.RawData;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by Araja Jyothi Babu on 28-Mar-16.
@@ -30,6 +32,15 @@ public class Utils {
                 concatedString.append(",");
         }
         return concatedString.toString();
+    }
+
+    public static ArrayList<String> getUniqueList(ArrayList<String> list){
+        ArrayList<String> uniqueList = new ArrayList();
+        SortedSet<String> set = new TreeSet<String>(list);
+        for(String uniqueValue : set){
+            uniqueList.add(uniqueValue);
+        }
+        return uniqueList;
     }
 
 }

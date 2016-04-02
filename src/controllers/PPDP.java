@@ -79,7 +79,7 @@ public class PPDP {
                 data.getClassInfo(), 1);
     }
 
-    public void generateAnonymizedData() throws Exception{
+    public ArrayList<AnonymizedData> generateAnonymizedData() throws Exception{
         ArrayList<RawData> rawDataList = RawDataService.getRawData();
         ArrayList<AnonymizedData> anonymizedDataList = new ArrayList();
         for(RawData data : rawDataList){
@@ -87,6 +87,7 @@ public class PPDP {
         }
         AnonymizedDataService.emptyData(); //emptying table before filling anonymous data
         AnonymizedDataService.upsertAnonymizedData(anonymizedDataList);
+        return anonymizedDataList;
     }
 
 }

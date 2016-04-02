@@ -13,12 +13,14 @@ public class ID3 {
     private static double mainEntropy = 0;
     private static ArrayList<AnonymizedData> data;
     private static ArrayList<String> classes;
+    private static ArrayList<ArrayList<AnonymizedSubData>> subModels;
 
     public ID3(ArrayList<AnonymizedData> data) {
         this.data = data;
         this.size = data.size();
         this.classes = getClasses();
-        mainEntropy = getMainEntropy();
+        this.subModels = getSumModels();
+        this.mainEntropy = getMainEntropy();
     }
 
     private static double log2(double b){
@@ -69,36 +71,29 @@ public class ID3 {
         return frequency/count;
     }
 
-    private static ArrayList<String> getUniqueList(ArrayList<String> list){
-        ArrayList<String> uniqueList = new ArrayList();
-        SortedSet<String> set = new TreeSet<String>(list);
-        for(String uniqueValue : set){
-            uniqueList.add(uniqueValue);
-        }
-        return uniqueList;
-    }
-
-    /*private static ArrayList<String> getUniqueList(ArrayList<AnonymizedSubData> subData){
-        ArrayList<String> models = new ArrayList();
-        for(AnonymizedSubData eachModel : subData ){
-            models.add(eachModel.model);
-        }
+    private static ArrayList<String> getUniqueList(ArrayList<AnonymizedSubData> subData){
+        ArrayList<String> models = getModelList(subData);
         SortedSet<String> set = new TreeSet<String>(models);
         ArrayList<String> uniqueList = new ArrayList();
         for(String uniqueValue : set){
             uniqueList.add(uniqueValue);
         }
         return uniqueList;
-    }*/
+    }
 
-    private static double informationGain(ArrayList<AnonymizedSubData> subData) throws Exception{
-        int S = subData.size(); //size of DataSet
-        ArrayList<Double> probabilityList = new ArrayList();
+    private static ArrayList<String> getModelList(ArrayList<AnonymizedSubData> subData){
         ArrayList<String> models = new ArrayList();
         for(AnonymizedSubData eachModel : subData ){
             models.add(eachModel.model);
         }
-        ArrayList<String> uniqueModels = getUniqueList(models);
+        return models;
+    }
+
+    private static double informationGain(ArrayList<AnonymizedSubData> subData) throws Exception{
+        int S = subData.size(); //size of DataSet
+        ArrayList<Double> probabilityList = new ArrayList();
+        ArrayList<String> uniqueModels = getUniqueList(subData);
+        ArrayList<String> models = getModelList(subData);
         double infoGain = mainEntropy;
         int s = 0;
         for(String uniqueModel : uniqueModels){
@@ -112,7 +107,7 @@ public class ID3 {
         return infoGain;
     }
 
-    public static void learnData(ArrayList<AnonymizedData> data) throws Exception{
+    private static ArrayList<ArrayList<AnonymizedSubData>> getSumModels(){
         ArrayList<AnonymizedSubData> ageModels = new ArrayList();
         ArrayList<AnonymizedSubData> sexModels = new ArrayList();
         ArrayList<AnonymizedSubData> codeModels = new ArrayList();
@@ -121,11 +116,39 @@ public class ID3 {
             sexModels.add(new AnonymizedSubData(row.getSex(), row.getClassInfo()));
             codeModels.add(new AnonymizedSubData(row.getDiseaseCode(), row.getClassInfo()));
         }
+        ArrayList<ArrayList<AnonymizedSubData>> subModels = new ArrayList();
+        subModels.add(ageModels);
+        subModels.add(sexModels);
+        subModels.add(codeModels);
+        return subModels;
+    }
+
+    private static ArrayList<AnonymizedSubData> getChildNodes(AttributeType type){
+        ArrayList<AnonymizedSubData> childNodes = new ArrayList();
+        switch (type){
+            case AGE: childNodes = subModels.get(0); break;
+            case SEX: childNodes = subModels.get(1); break;
+            case CODE: childNodes = subModels.get(2); break;
+            default:
+        }
+        return childNodes;
+    }
+
+    public void processData() throws Exception{
         SortedMap<AttributeType, Double> informationGains = new TreeMap<AttributeType, Double>();
-        informationGains.put(AttributeType.AGE, informationGain(ageModels));
-        informationGains.put(AttributeType.SEX, informationGain(sexModels));
-        informationGains.put(AttributeType.CODE, informationGain(codeModels));
-        AttributeType root = informationGains.firstKey();
+        informationGains.put(AttributeType.AGE, informationGain(subModels.get(0)));
+        informationGains.put(AttributeType.SEX, informationGain(subModels.get(1)));
+        informationGains.put(AttributeType.CODE, informationGain(subModels.get(2)));
+        AttributeType rootType = informationGains.firstKey();
+        Node root = new Node(rootType.toString());
+        ArrayList<Node> children = new ArrayList();
+        ArrayList<AnonymizedSubData> childNodes = getChildNodes(rootType);
+        ArrayList<String> uniqueModels = getUniqueList(childNodes);
+        for(String model : uniqueModels){
+            children.add(new Node(model));
+        }
+        root.setChildren(children);
+        System.out.print(root);
     }
 
 }
