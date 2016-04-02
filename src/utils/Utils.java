@@ -4,6 +4,8 @@ import models.AnonymizedData;
 import models.RawData;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by Araja Jyothi Babu on 28-Mar-16.
@@ -16,6 +18,18 @@ public class Utils {
 
     public static AnonymizedData makeAnonymizedData(ResultSet data) throws Exception {
         return new AnonymizedData(data.getString(1), data.getString(2), data.getString(3),data.getString(4),data.getInt(5));
+    }
+
+    public static String concatStrings(Set<String> setOfStrings){
+        StringBuilder concatedString = new StringBuilder("");
+        int size = setOfStrings.size();
+        for(String string : setOfStrings){
+            size--;
+            concatedString.append(string);
+            if(size > 0)
+                concatedString.append(",");
+        }
+        return concatedString.toString();
     }
 
 }

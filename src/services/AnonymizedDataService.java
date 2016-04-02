@@ -19,6 +19,11 @@ public class AnonymizedDataService {
         return isUpdated;
     }
 
+    public static boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
+        boolean isUpdated = OracleDAO.upsertAnonymizedData(dataList);
+        return isUpdated;
+    }
+
     public static ArrayList<AnonymizedData> getAnonymizedData() throws Exception {
         ArrayList<AnonymizedData> anonymousDataList = OracleDAO.getAnonymizedData();
         return anonymousDataList;

@@ -1,5 +1,10 @@
 package controllers;
 
+import models.AnonymizedData;
+import models.RawData;
+import services.AnonymizedDataService;
+import services.RawDataService;
+import utils.Utils;
 import java.util.*;
 
 /**
@@ -10,10 +15,10 @@ public class PPDP {
     private static int ageRangeSize = 5;
     private static int diseaseCodeRangeSize = 2;
 
-    public HashMap<String, String> anonymousDiseaseCode;
+    public static HashMap<String, String> anonymousDiseaseCode;
 
-    public PPDP(String diseaseCodes) throws Exception {
-        this.anonymousDiseaseCode = anonymousDiseaseCodes(sortedUniqueDiseaseCodes(diseaseCodes));
+    public PPDP() throws Exception {
+        this.anonymousDiseaseCode = getAnonymousDiseaseCodes(sortedUniqueDiseaseCodes(getDiseaseCodes()));
     }
 
     public static int[] roundedMinMaxAge(int[] minMaxAgeFromDB){
@@ -41,7 +46,7 @@ public class PPDP {
         return sortedList;
     }
 
-    public static HashMap<String, String> anonymousDiseaseCodes(ArrayList<String> sortedDiseaseCodes) throws Exception {
+    public static HashMap<String, String> getAnonymousDiseaseCodes(ArrayList<String> sortedDiseaseCodes) throws Exception {
         HashMap<String, String> encodedDiseaseCodes = new HashMap<String, String>();
         int i = 0, k = 0;
         while(i < sortedDiseaseCodes.size()){
@@ -53,5 +58,33 @@ public class PPDP {
         return encodedDiseaseCodes;
     }
 
+    public static String getDiseaseCodes() throws Exception{
+        String diseaseCodes = RawDataService.getDiseaseCodes();
+        return diseaseCodes;
+    }
+
+    public static String generateAnonymizedDiseaseCode(String diseaseCodes) throws Exception{
+        String[] splittedDiseaseCodes = diseaseCodes.split(",");
+        SortedSet<String> uniqueDiseaseCodes = new TreeSet<String>();
+        for(String string : splittedDiseaseCodes){
+            uniqueDiseaseCodes.add(anonymousDiseaseCode.get(string));
+        }
+        return Utils.concatStrings(uniqueDiseaseCodes);
+    }
+
+    public static AnonymizedData anonymizedDataFromRawData(RawData data) throws Exception {
+        return new AnonymizedData(ageToRange(data.getAge()), data.getSex(),
+                generateAnonymizedDiseaseCode(data.getDiseaseCode()),
+                data.getClassInfo(), 1);
+    }
+
+    public static void generateAnonymizedData() throws Exception{
+        ArrayList<RawData> rawDataList = RawDataService.getRawData();
+        ArrayList<AnonymizedData> anonymizedDataList = new ArrayList();
+        for(RawData data : rawDataList){
+            anonymizedDataList.add(anonymizedDataFromRawData(data));
+        }
+        AnonymizedDataService.upsertAnonymizedData(anonymizedDataList);
+    }
 
 }

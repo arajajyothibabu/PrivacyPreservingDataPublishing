@@ -1,4 +1,4 @@
-package controllers;
+package controllers.classification;
 
 import models.*;
 import utils.AttributeType;

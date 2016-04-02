@@ -37,6 +37,26 @@ public class OracleDAO {
         return isInserted;
     }
 
+    public static boolean insertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
+        Connection connection = DB.openConnection();
+        int insertedCount = 0;
+        boolean isInserted;
+        for(AnonymizedData data : dataList) {
+            isInserted = false;
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO anonymous VALUES(?,?,?,?,?)");
+            statement.setString(1, data.getAge());
+            statement.setString(2, data.getSex());
+            statement.setString(3, data.getDiseaseCode());
+            statement.setString(4, data.getClassInfo());
+            statement.setInt(5, data.getCount());
+            isInserted = statement.execute();
+            if(isInserted)
+                insertedCount++;
+        }
+        connection.close();
+        return insertedCount == dataList.size();
+    }
+
     public static boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
         Connection connection = DB.openConnection();
         //check if already exists
@@ -59,6 +79,37 @@ public class OracleDAO {
         }
         connection.close();
         return isUpdated;
+    }
+
+    public static boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
+        Connection connection = DB.openConnection();
+        Statement checkingStatement = connection.createStatement();
+        Statement updateStatement = connection.createStatement();
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO anonymous VALUES(?,?,?,?,?)");
+        ResultSet existedData;
+        boolean isUpdated;
+        int updatedCount = 0, updated = 0;
+        for(AnonymizedData data : dataList) {
+            //check if already exists
+            isUpdated = false;
+            existedData = checkingStatement.executeQuery("SELECT * FROM anonymous WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
+            if (existedData.next()) {
+                updated = updateStatement.executeUpdate("UPDATE anonymous SET count = '" + (existedData.getInt("count") + 1) + "' WHERE WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
+                if (updated > 0)
+                    isUpdated = true;
+            } else {
+                statement.setString(1, data.getAge());
+                statement.setString(2, data.getSex());
+                statement.setString(3, data.getDiseaseCode());
+                statement.setString(4, data.getClassInfo());
+                statement.setInt(5, data.getCount());
+                isUpdated = statement.execute();
+            }
+            if(isUpdated)
+                updatedCount++;
+        }
+        connection.close();
+        return updatedCount == dataList.size();
     }
 
     public static ArrayList<RawData> getRawData() throws Exception {
