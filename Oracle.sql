@@ -1,1 +1,1 @@
-SELECT * FROM rawData;
+SELECT * FROM anonymous;

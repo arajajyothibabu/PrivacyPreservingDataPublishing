@@ -94,7 +94,7 @@ public class OracleDAO {
             isUpdated = false;
             existedData = checkingStatement.executeQuery("SELECT * FROM anonymous WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
             if (existedData.next()) {
-                updated = updateStatement.executeUpdate("UPDATE anonymous SET count = '" + (existedData.getInt("count") + 1) + "' WHERE WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
+                updated = updateStatement.executeUpdate("UPDATE anonymous SET count = '" + (existedData.getInt("count") + 1) + "' WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
                 if (updated > 0)
                     isUpdated = true;
             } else {
@@ -165,7 +165,6 @@ public class OracleDAO {
         Connection connection = DB.openConnection();
         Statement statement = connection.createStatement();
         boolean isTruncated = statement.execute("TRUNCATE TABLE anonymous");
-        System.out.print(isTruncated);
         connection.close();
         return isTruncated;
     }
