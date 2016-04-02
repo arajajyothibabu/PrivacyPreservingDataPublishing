@@ -161,4 +161,21 @@ public class OracleDAO {
         return minMaxAge;
     }
 
+    public static boolean emptyAnonymizedData() throws Exception{
+        Connection connection = DB.openConnection();
+        Statement statement = connection.createStatement();
+        boolean isTruncated = statement.execute("TRUNCATE TABLE anonymous");
+        System.out.print(isTruncated);
+        connection.close();
+        return isTruncated;
+    }
+
+    public static boolean emptyRawData() throws Exception{
+        Connection connection = DB.openConnection();
+        Statement statement = connection.createStatement();
+        boolean isTruncated = statement.execute("TRUNCATE TABLE rawdata");
+        connection.close();
+        return isTruncated;
+    }
+
 }

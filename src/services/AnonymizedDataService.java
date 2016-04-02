@@ -29,4 +29,9 @@ public class AnonymizedDataService {
         return anonymousDataList;
     }
 
+    public static boolean emptyData() throws Exception {
+        boolean isTruncated = OracleDAO.emptyAnonymizedData();
+        return isTruncated;
+    }
+
 }
