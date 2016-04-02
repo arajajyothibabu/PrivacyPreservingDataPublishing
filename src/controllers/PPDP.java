@@ -29,8 +29,9 @@ public class PPDP {
     }
 
     public static String ageToRange(int age){
-        int min = age % ageRangeSize == 0? ageRangeSize : age % ageRangeSize;
-        return "[" + (age - min + 1) + "-" + (age + age % ageRangeSize) + ")";
+        int mod = age % ageRangeSize;
+        int min = mod == 0? ageRangeSize : mod;
+        return "[" + (age - min + 1) + "-" + (age + ageRangeSize - min) + "]";
     }
 
     public static ArrayList<String> sortedUniqueDiseaseCodes(String diseaseCodes) throws Exception {
@@ -78,7 +79,7 @@ public class PPDP {
                 data.getClassInfo(), 1);
     }
 
-    public static void generateAnonymizedData() throws Exception{
+    public void generateAnonymizedData() throws Exception{
         ArrayList<RawData> rawDataList = RawDataService.getRawData();
         ArrayList<AnonymizedData> anonymizedDataList = new ArrayList();
         for(RawData data : rawDataList){
