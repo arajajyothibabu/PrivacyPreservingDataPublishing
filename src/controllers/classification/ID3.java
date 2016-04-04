@@ -13,7 +13,8 @@ public class ID3 {
     private static double mainEntropy = 0;
     private static ArrayList<AnonymizedData> data;
     private static ArrayList<String> classes;
-    private static ArrayList<ArrayList<AnonymizedSubData>> attributes; // 0 --> ageAttribute, 1 --> sexAttribute, 2 --> codeAttribute
+    private static Map<AttributeType, ArrayList<AnonymizedSubData>> attributes; // 0 --> ageAttribute, 1 --> sexAttribute, 2 --> codeAttribute
+    private static ArrayList<AttributeType> traversableAttributes;
 
     public ID3(ArrayList<AnonymizedData> data) {
         this.data = data;
@@ -21,6 +22,15 @@ public class ID3 {
         this.classes = getClasses();
         this.attributes = getAttributes();
         this.mainEntropy = getMainEntropy();
+        this.traversableAttributes = getTraversableAttributes();
+    }
+
+    private static ArrayList<AttributeType> getTraversableAttributes(){
+        ArrayList<AttributeType> traversableAttributes = new ArrayList();
+        traversableAttributes.add(AttributeType.AGE);
+        traversableAttributes.add(AttributeType.SEX);
+        traversableAttributes.add(AttributeType.CODE);
+        return traversableAttributes;
     }
 
     private static double log2(double b){
@@ -71,6 +81,16 @@ public class ID3 {
         return frequency/count;
     }
 
+    private static SortedSet<String> classesForAttribute(String attribute, AttributeType type) throws Exception{
+        ArrayList<AnonymizedSubData> subData = getChildNodes(type);
+        SortedSet<String> uniqueClasses = new TreeSet<String>();
+        for(AnonymizedSubData eachAttribute : subData ){
+            if(eachAttribute.model.equals(attribute))
+                uniqueClasses.add(eachAttribute.classInfo);
+        }
+        return uniqueClasses;
+    }
+
     private static ArrayList<String> getUniqueList(ArrayList<AnonymizedSubData> subData){
         ArrayList<String> attributes = getAttributeList(subData);
         SortedSet<String> set = new TreeSet<String>(attributes);
@@ -107,7 +127,7 @@ public class ID3 {
         return infoGain;
     }
 
-    private static ArrayList<ArrayList<AnonymizedSubData>> getAttributes(){
+    private static Map<AttributeType, ArrayList<AnonymizedSubData>> getAttributes(){
         ArrayList<AnonymizedSubData> ageAttributes = new ArrayList();
         ArrayList<AnonymizedSubData> sexAttributes = new ArrayList();
         ArrayList<AnonymizedSubData> codeAttributes = new ArrayList();
@@ -116,42 +136,103 @@ public class ID3 {
             sexAttributes.add(new AnonymizedSubData(row.getSex(), row.getClassInfo()));
             codeAttributes.add(new AnonymizedSubData(row.getDiseaseCode(), row.getClassInfo()));
         }
-        ArrayList<ArrayList<AnonymizedSubData>> attributes = new ArrayList();
-        attributes.add(ageAttributes);
-        attributes.add(sexAttributes);
-        attributes.add(codeAttributes);
+        Map<AttributeType, ArrayList<AnonymizedSubData>> attributes = new HashMap<AttributeType, ArrayList<AnonymizedSubData>>();
+        attributes.put(AttributeType.AGE, ageAttributes);
+        attributes.put(AttributeType.SEX, sexAttributes);
+        attributes.put(AttributeType.CODE, codeAttributes);
+        return attributes;
+    }
+
+    private static Map<AttributeType, ArrayList<AnonymizedSubData>> getAttributes(AttributeType type, String unClassifiedAttribute, ArrayList<AttributeType> traversableAttributes){
+        ArrayList<AnonymizedSubData> ageAttributes = new ArrayList();
+        ArrayList<AnonymizedSubData> sexAttributes = new ArrayList();
+        ArrayList<AnonymizedSubData> codeAttributes = new ArrayList();
+        for(AnonymizedData row : data){
+            if(type.equals(AttributeType.AGE) && row.getAge().equals(unClassifiedAttribute) ||
+                    type.equals(AttributeType.SEX) && row.getSex().equals(unClassifiedAttribute) ||
+                    type.equals(AttributeType.CODE) && row.getDiseaseCode().equals(unClassifiedAttribute)) {
+                if (traversableAttributes.contains(AttributeType.AGE))
+                    ageAttributes.add(new AnonymizedSubData(row.getAge(), row.getClassInfo()));
+                if (traversableAttributes.contains(AttributeType.SEX))
+                    sexAttributes.add(new AnonymizedSubData(row.getSex(), row.getClassInfo()));
+                if (traversableAttributes.contains(AttributeType.CODE))
+                    codeAttributes.add(new AnonymizedSubData(row.getDiseaseCode(), row.getClassInfo()));
+            }
+        }
+        Map<AttributeType, ArrayList<AnonymizedSubData>> attributes = new HashMap<AttributeType, ArrayList<AnonymizedSubData>>();
+        if (traversableAttributes.contains(AttributeType.AGE))
+            attributes.put(AttributeType.AGE, ageAttributes);
+        if (traversableAttributes.contains(AttributeType.SEX))
+            attributes.put(AttributeType.SEX, sexAttributes);
+        if (traversableAttributes.contains(AttributeType.CODE))
+            attributes.put(AttributeType.CODE, codeAttributes);
         return attributes;
     }
 
     private static ArrayList<AnonymizedSubData> getChildNodes(AttributeType type){
         ArrayList<AnonymizedSubData> childNodes = new ArrayList();
+        /*for(Map.Entry<AttributeType, ArrayList<AnonymizedSubData>>key : attributes.entrySet()){
+            System.out.println(key.getKey() + "-----" + key.getValue().size());
+        }*/
         switch (type){
-            case AGE: childNodes = attributes.get(0); break;
-            case SEX: childNodes = attributes.get(1); break;
-            case CODE: childNodes = attributes.get(2); break;
+            case AGE: childNodes = attributes.get(AttributeType.AGE); break;
+            case SEX: childNodes = attributes.get(AttributeType.SEX); break;
+            case CODE: childNodes = attributes.get(AttributeType.CODE); break;
             default:
         }
         return childNodes;
     }
 
-    public void processData() throws Exception{
+    private static Node classificationTree(Map<AttributeType, ArrayList<AnonymizedSubData>> attributes, ArrayList<AttributeType> traversableAttributes) throws Exception{
         SortedMap<AttributeType, Double> informationGains = new TreeMap<AttributeType, Double>();
-        informationGains.put(AttributeType.AGE, informationGain(attributes.get(0)));
-        informationGains.put(AttributeType.SEX, informationGain(attributes.get(1)));
-        informationGains.put(AttributeType.CODE, informationGain(attributes.get(2)));
-        AttributeType rootType = informationGains.firstKey();
+        if(traversableAttributes.contains(AttributeType.AGE))
+            informationGains.put(AttributeType.AGE, informationGain(attributes.get(AttributeType.AGE)));
+        if(traversableAttributes.contains(AttributeType.SEX))
+            informationGains.put(AttributeType.SEX, informationGain(attributes.get(AttributeType.SEX)));
+        if(traversableAttributes.contains(AttributeType.CODE))
+            informationGains.put(AttributeType.CODE, informationGain(attributes.get(AttributeType.CODE)));
+        if(!traversableAttributes.isEmpty()) {
+            traversableAttributes.remove(informationGains.firstKey());
+            AttributeType rootType = informationGains.firstKey();
+            Node root = new Node(rootType.toString());
+            ArrayList<Node> children = new ArrayList();
+            ArrayList<String> childAttributes = getUniqueList(getChildNodes(rootType));
+            SortedSet<String> uniqueClassesForAttribute;
+            for (String attribute : childAttributes) {
+                uniqueClassesForAttribute = classesForAttribute(attribute, rootType);
+                children.add(new Node(attribute));
+                if (uniqueClassesForAttribute.size() == 1) {
+                    children.get(children.size() - 1).children.add(new Node(uniqueClassesForAttribute.first()));
+                } else {
+                    attributes = getAttributes(rootType, attribute, traversableAttributes); //updating attributes
+                    System.out.println("Called" + attributes.size());
+                    children.get(children.size() - 1).children.add(classificationTree(attributes, traversableAttributes));
+                }
+            }
+            root.setChildren(children);
+            return root;
+        }else{
+            return new Node("JB");
+        }
+    }
+
+    private static void printTree(Node root) throws Exception {
+       if(root != null) {
+            ArrayList<Node> children;
+            String hasChildren = root.children.size() > 1 ? " **" : root.children.size() == 1 ? " *" : "";
+            System.out.println("\n " + root.name + hasChildren);
+            for (Node child : root.children)
+                printTree(child);
+        }
+    }
+
+    public void processData() throws Exception{
         /*for(Map.Entry<AttributeType, Double>key : informationGains.entrySet()){
             System.out.print(key.getKey() + "-----" + key.getValue());
         }*/
-        Node root = new Node(rootType.toString());
-        ArrayList<Node> children = new ArrayList();
-        ArrayList<AnonymizedSubData> childNodes = getChildNodes(rootType);
-        ArrayList<String> uniqueAttributes = getUniqueList(childNodes);
-        for(String attribute : uniqueAttributes){
-            children.add(new Node(attribute));
-        }
-        root.setChildren(children);
+        Node root = classificationTree(attributes, traversableAttributes);
         System.out.print(root);
+        printTree(root);
     }
 
 }
