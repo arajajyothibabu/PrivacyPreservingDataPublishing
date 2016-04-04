@@ -205,6 +205,7 @@ public class ID3 {
                     children.get(children.size() - 1).children.add(new Node(uniqueClassesForAttribute.first()));
                 } else {
                     attributes = getAttributes(rootType, attribute, traversableAttributes); //updating attributes
+                    //System.out.println("attributes ==" + attributes.size() + "-----travesrr" + traversableAttributes.size() );
                     children.get(children.size() - 1).children.add(classificationTree(attributes, traversableAttributes));
                 }
             }
@@ -229,9 +230,7 @@ public class ID3 {
         /*for(Map.Entry<AttributeType, Double>key : informationGains.entrySet()){
             System.out.print(key.getKey() + "-----" + key.getValue());
         }*/
-        Node root = classificationTree(attributes, traversableAttributes);
-        System.out.print(root);
-        printTree(root);
+        printTree(classificationTree(attributes, traversableAttributes));
     }
 
 }
