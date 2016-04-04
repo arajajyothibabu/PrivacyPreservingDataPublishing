@@ -9,28 +9,34 @@ import java.util.ArrayList;
  */
 public class AnonymizedDataService {
 
-    public static boolean insertAnonymizedData(AnonymizedData data) throws Exception {
-        boolean isInserted = OracleDAO.insertAnonymizedData(data);
+    OracleDAO dao;
+
+    public AnonymizedDataService(OracleDAO dao) throws Exception {
+        this.dao = dao;
+    }
+
+    public boolean insertAnonymizedData(AnonymizedData data) throws Exception {
+        boolean isInserted = dao.insertAnonymizedData(data);
         return isInserted;
     }
 
-    public static boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
-        boolean isUpdated = OracleDAO.upsertAnonymizedData(data);
+    public boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
+        boolean isUpdated = dao.upsertAnonymizedData(data);
         return isUpdated;
     }
 
-    public static boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
-        boolean isUpdated = OracleDAO.upsertAnonymizedData(dataList);
+    public boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
+        boolean isUpdated = dao.upsertAnonymizedData(dataList);
         return isUpdated;
     }
 
-    public static ArrayList<AnonymizedData> getAnonymizedData() throws Exception {
-        ArrayList<AnonymizedData> anonymousDataList = OracleDAO.getAnonymizedData();
+    public ArrayList<AnonymizedData> getAnonymizedData() throws Exception {
+        ArrayList<AnonymizedData> anonymousDataList = dao.getAnonymizedData();
         return anonymousDataList;
     }
 
-    public static boolean emptyData() throws Exception {
-        boolean isTruncated = OracleDAO.emptyAnonymizedData();
+    public boolean emptyData() throws Exception {
+        boolean isTruncated = dao.emptyAnonymizedData();
         return isTruncated;
     }
 

@@ -11,8 +11,12 @@ import java.util.ArrayList;
  */
 public class OracleDAO {
 
-    public static boolean insertRawData(RawData rawData) throws Exception{
-        Connection connection = DB.openConnection();
+    Connection connection;
+    public OracleDAO(DB db) throws Exception{
+        this.connection = db.openConnection();
+    }
+
+    public boolean insertRawData(RawData rawData) throws Exception{
         PreparedStatement statement = connection.prepareStatement("INSERT INTO rawdata VALUES(?,?,?,?,?)");
         statement.setInt(1, rawData.getId());
         statement.setString(2, rawData.getSex());
@@ -20,12 +24,10 @@ public class OracleDAO {
         statement.setString(4, rawData.getDiseaseCode());
         statement.setString(5,rawData.getClassInfo());
         boolean isInserted = statement.execute();
-        connection.close();
         return isInserted;
     }
 
-    public static boolean insertAnonymizedData(AnonymizedData data) throws Exception {
-        Connection connection = DB.openConnection();
+    public boolean insertAnonymizedData(AnonymizedData data) throws Exception {
         PreparedStatement statement = connection.prepareStatement("INSERT INTO anonymous VALUES(?,?,?,?,?)");
         statement.setString(1, data.getAge());
         statement.setString(2, data.getSex());
@@ -33,12 +35,10 @@ public class OracleDAO {
         statement.setString(4,data.getClassInfo());
         statement.setInt(5, data.getCount());
         boolean isInserted = statement.execute();
-        connection.close();
         return isInserted;
     }
 
-    public static boolean insertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
-        Connection connection = DB.openConnection();
+    public boolean insertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
         int insertedCount = 0;
         boolean isInserted;
         for(AnonymizedData data : dataList) {
@@ -53,12 +53,10 @@ public class OracleDAO {
             if(isInserted)
                 insertedCount++;
         }
-        connection.close();
         return insertedCount == dataList.size();
     }
 
-    public static boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
-        Connection connection = DB.openConnection();
+    public boolean upsertAnonymizedData(AnonymizedData data) throws Exception {
         //check if already exists
         Statement checkingStatement = connection.createStatement();
         ResultSet existedData = checkingStatement.executeQuery("SELECT * FROM anonymous WHERE age = '" + data.getAge() + "' AND sex = '" + data.getSex() + "' AND code = '" + data.getDiseaseCode() + "' AND class = '" + data.getClassInfo() + "'");
@@ -77,12 +75,10 @@ public class OracleDAO {
             statement.setInt(5, data.getCount());
             isUpdated = statement.execute();
         }
-        connection.close();
         return isUpdated;
     }
 
-    public static boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
-        Connection connection = DB.openConnection();
+    public boolean upsertAnonymizedData(ArrayList<AnonymizedData> dataList) throws Exception {
         Statement checkingStatement = connection.createStatement();
         Statement updateStatement = connection.createStatement();
         PreparedStatement statement = connection.prepareStatement("INSERT INTO anonymous VALUES(?,?,?,?,?)");
@@ -108,48 +104,40 @@ public class OracleDAO {
             if(isUpdated)
                 updatedCount++;
         }
-        connection.close();
         return updatedCount == dataList.size();
     }
 
-    public static ArrayList<RawData> getRawData() throws Exception {
-        Connection connection = DB.openConnection();
+    public ArrayList<RawData> getRawData() throws Exception {
         Statement statement = connection.createStatement();
         ResultSet dataFromDB = statement.executeQuery("SELECT * from rawdata");
         ArrayList<RawData> rawDataList = new ArrayList();
         while(dataFromDB.next()){
             rawDataList.add(Utils.makeRawData(dataFromDB));
         }
-        connection.close();
         return rawDataList;
     }
 
-    public static ArrayList<AnonymizedData> getAnonymizedData() throws Exception {
-        Connection connection = DB.openConnection();
+    public ArrayList<AnonymizedData> getAnonymizedData() throws Exception {
         Statement statement = connection.createStatement();
         ResultSet dataFromDB = statement.executeQuery("SELECT * from anonymous");
         ArrayList<AnonymizedData> anonymousDataList = new ArrayList();
         while(dataFromDB.next()){
             anonymousDataList.add(Utils.makeAnonymizedData(dataFromDB));
         }
-        connection.close();
         return anonymousDataList;
     }
 
-    public static String getDiseaseCodes() throws Exception {
-        Connection connection = DB.openConnection();
+    public String getDiseaseCodes() throws Exception {
         Statement statement = connection.createStatement();
         ResultSet codeFromDB = statement.executeQuery("SELECT DISTINCT(code) from rawdata");
         StringBuilder diseaseCodes = new StringBuilder("");
         while(codeFromDB.next()){
             diseaseCodes.append(codeFromDB.getString(1) + ",");
         }
-        connection.close();
         return diseaseCodes.toString();
     }
 
-    public static int[] getMinMaxAges() throws Exception {
-        Connection connection = DB.openConnection();
+    public int[] getMinMaxAges() throws Exception {
         Statement statement = connection.createStatement();
         ResultSet ageFromDB = statement.executeQuery("SELECT MIN(age), MAX(age) from rawdata");
         int[] minMaxAge = new int[2];
@@ -157,23 +145,18 @@ public class OracleDAO {
             minMaxAge[0] = ageFromDB.getInt(1);
             minMaxAge[1] = ageFromDB.getInt(2);
         }
-        connection.close();
         return minMaxAge;
     }
 
-    public static boolean emptyAnonymizedData() throws Exception{
-        Connection connection = DB.openConnection();
+    public boolean emptyAnonymizedData() throws Exception{
         Statement statement = connection.createStatement();
         boolean isTruncated = statement.execute("TRUNCATE TABLE anonymous");
-        connection.close();
         return isTruncated;
     }
 
-    public static boolean emptyRawData() throws Exception{
-        Connection connection = DB.openConnection();
+    public boolean emptyRawData() throws Exception{
         Statement statement = connection.createStatement();
         boolean isTruncated = statement.execute("TRUNCATE TABLE rawdata");
-        connection.close();
         return isTruncated;
     }
 

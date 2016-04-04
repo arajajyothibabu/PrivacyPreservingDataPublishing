@@ -205,14 +205,13 @@ public class ID3 {
                     children.get(children.size() - 1).children.add(new Node(uniqueClassesForAttribute.first()));
                 } else {
                     attributes = getAttributes(rootType, attribute, traversableAttributes); //updating attributes
-                    System.out.println("Called" + attributes.size());
                     children.get(children.size() - 1).children.add(classificationTree(attributes, traversableAttributes));
                 }
             }
             root.setChildren(children);
             return root;
         }else{
-            return new Node("JB");
+            return new Node("END");
         }
     }
 

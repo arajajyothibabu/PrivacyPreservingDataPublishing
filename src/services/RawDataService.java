@@ -9,23 +9,29 @@ import java.util.ArrayList;
  */
 public class RawDataService {
 
-    public static boolean insertRawData(RawData rawData) throws Exception{
-        boolean isInserted = OracleDAO.insertRawData(rawData);
+    OracleDAO dao;
+
+    public RawDataService(OracleDAO dao) throws Exception {
+        this.dao = dao;
+    }
+    
+    public boolean insertRawData(RawData rawData) throws Exception{
+        boolean isInserted = dao.insertRawData(rawData);
         return isInserted;
     }
 
-    public static ArrayList<RawData> getRawData() throws Exception {
-        ArrayList<RawData> rawDataList = OracleDAO.getRawData();
+    public ArrayList<RawData> getRawData() throws Exception {
+        ArrayList<RawData> rawDataList = dao.getRawData();
         return rawDataList;
     }
 
-    public static String getDiseaseCodes() throws Exception {
-        String diseaseCodes = OracleDAO.getDiseaseCodes();
+    public String getDiseaseCodes() throws Exception {
+        String diseaseCodes = dao.getDiseaseCodes();
         return diseaseCodes;
     }
 
-    public static int[] getMinMaxAges() throws Exception {
-        int[] minMaxAge = OracleDAO.getMinMaxAges();
+    public int[] getMinMaxAges() throws Exception {
+        int[] minMaxAge = dao.getMinMaxAges();
         return minMaxAge;
     }
 
