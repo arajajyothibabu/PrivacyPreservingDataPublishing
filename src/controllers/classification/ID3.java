@@ -13,7 +13,7 @@ public class ID3 {
     private static double mainEntropy = 0;
     private static ArrayList<AnonymizedData> data;
     private static ArrayList<String> classes;
-    private static ArrayList<ArrayList<AnonymizedSubData>> attributes; // 0 --> ageModel, 1 --> sexModel, 2 --> codeModel
+    private static ArrayList<ArrayList<AnonymizedSubData>> attributes; // 0 --> ageAttribute, 1 --> sexAttribute, 2 --> codeAttribute
 
     public ID3(ArrayList<AnonymizedData> data) {
         this.data = data;
@@ -40,7 +40,6 @@ public class ID3 {
     }
 
     private static double getMainEntropy(){
-        int size = data.size();
         ArrayList<Double> probabilityList = new ArrayList();
         double frequency = 0;
         for(String classInfo : classes){
@@ -53,18 +52,19 @@ public class ID3 {
     private static double entropy(ArrayList<Double> p){
         double sum = 0;
         for(double i : p){
-            sum -= i * log2(i);
+            if(i > 0) //to handle log2(0) = infinity condition
+                sum -= i * log2(i);
         }
         return sum;
     }
 
-    private static double probabilityOf(String model, String classInfo, ArrayList<AnonymizedSubData> subData) throws Exception{
+    private static double probabilityOf(String attribute, String classInfo, ArrayList<AnonymizedSubData> subData) throws Exception{
         int count = 0;
         double frequency = 0;
-        for(AnonymizedSubData eachModel : subData ){
-            if(eachModel.model.equals(model)){
+        for(AnonymizedSubData eachAttribute : subData ){
+            if(eachAttribute.model.equals(attribute)){
                 count++;
-                if(eachModel.classInfo.equals(classInfo))
+                if(eachAttribute.classInfo.equals(classInfo))
                     frequency++;
             }
         }
@@ -72,8 +72,8 @@ public class ID3 {
     }
 
     private static ArrayList<String> getUniqueList(ArrayList<AnonymizedSubData> subData){
-        ArrayList<String> models = getModelList(subData);
-        SortedSet<String> set = new TreeSet<String>(models);
+        ArrayList<String> attributes = getAttributeList(subData);
+        SortedSet<String> set = new TreeSet<String>(attributes);
         ArrayList<String> uniqueList = new ArrayList();
         for(String uniqueValue : set){
             uniqueList.add(uniqueValue);
@@ -81,26 +81,26 @@ public class ID3 {
         return uniqueList;
     }
 
-    private static ArrayList<String> getModelList(ArrayList<AnonymizedSubData> subData){
-        ArrayList<String> models = new ArrayList();
-        for(AnonymizedSubData eachModel : subData ){
-            models.add(eachModel.model);
+    private static ArrayList<String> getAttributeList(ArrayList<AnonymizedSubData> subData){
+        ArrayList<String> attributes = new ArrayList();
+        for(AnonymizedSubData eachAttribute : subData ){
+            attributes.add(eachAttribute.model);
         }
-        return models;
+        return attributes;
     }
 
     private static double informationGain(ArrayList<AnonymizedSubData> subData) throws Exception{
         int S = subData.size(); //size of DataSet
         ArrayList<Double> probabilityList = new ArrayList();
         ArrayList<String> uniqueAttributes = getUniqueList(subData);
-        ArrayList<String> models = getModelList(subData);
+        ArrayList<String> attributes = getAttributeList(subData);
         double infoGain = mainEntropy;
-        int s = 0;
-        for(String uniqueModel : uniqueAttributes){
+        double s = 0;
+        for(String uniqueAttribute : uniqueAttributes){
             for(String uniqueClass : classes){
-                probabilityList.add(probabilityOf(uniqueModel, uniqueClass, subData));
+                probabilityList.add(probabilityOf(uniqueAttribute, uniqueClass, subData));
             }
-            s = Collections.frequency(models, uniqueModel);
+            s = Collections.frequency(attributes, uniqueAttribute);
             infoGain -= (Math.abs(s)/S) * entropy(probabilityList);
             probabilityList.clear();
         }
@@ -140,12 +140,15 @@ public class ID3 {
         informationGains.put(AttributeType.SEX, informationGain(attributes.get(1)));
         informationGains.put(AttributeType.CODE, informationGain(attributes.get(2)));
         AttributeType rootType = informationGains.firstKey();
+        /*for(Map.Entry<AttributeType, Double>key : informationGains.entrySet()){
+            System.out.print(key.getKey() + "-----" + key.getValue());
+        }*/
         Node root = new Node(rootType.toString());
         ArrayList<Node> children = new ArrayList();
         ArrayList<AnonymizedSubData> childNodes = getChildNodes(rootType);
         ArrayList<String> uniqueAttributes = getUniqueList(childNodes);
-        for(String model : uniqueAttributes){
-            children.add(new Node(model));
+        for(String attribute : uniqueAttributes){
+            children.add(new Node(attribute));
         }
         root.setChildren(children);
         System.out.print(root);

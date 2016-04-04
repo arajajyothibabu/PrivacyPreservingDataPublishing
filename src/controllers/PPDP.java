@@ -98,9 +98,10 @@ public class PPDP {
         for(RawData data : rawDataList){
             anonymizedDataList.add(anonymizedDataFromRawData(data));
         }
-        AnonymizedDataService.emptyData(); //emptying table before filling anonymous data
-        AnonymizedDataService.upsertAnonymizedData(anonymizedDataList);
-        return anonymizedDataList;
+        anonymizedDataService.emptyData(); //emptying table before filling anonymous data
+        anonymizedDataService.upsertAnonymizedData(anonymizedDataList);
+        ArrayList<AnonymizedData> anonymizedDataListFromDB = anonymizedDataService.getAnonymizedData();
+        return anonymizedDataListFromDB;
     }
 
 }
