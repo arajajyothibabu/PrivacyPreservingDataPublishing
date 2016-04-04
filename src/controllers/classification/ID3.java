@@ -13,7 +13,7 @@ public class ID3 {
     private static double mainEntropy = 0;
     private static ArrayList<AnonymizedData> data;
     private static ArrayList<String> classes;
-    private static ArrayList<ArrayList<AnonymizedSubData>> subModels;
+    private static ArrayList<ArrayList<AnonymizedSubData>> subModels; // 0 --> ageModel, 1 --> sexModel, 2 --> codeModel
 
     public ID3(ArrayList<AnonymizedData> data) {
         this.data = data;
