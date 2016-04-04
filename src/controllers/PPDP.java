@@ -17,24 +17,37 @@ public class PPDP {
 
     public static HashMap<String, String> anonymousDiseaseCode;
 
-    public PPDP() throws Exception {
+    private static RawDataService rawDataService;
+    private static AnonymizedDataService anonymizedDataService;
+
+    public PPDP(RawDataService rawDataService, AnonymizedDataService anonymizedDataService) throws Exception {
+        this.rawDataService = rawDataService;
+        this.anonymizedDataService = anonymizedDataService;
         this.anonymousDiseaseCode = getAnonymousDiseaseCodes(sortedUniqueDiseaseCodes(getDiseaseCodes()));
     }
 
-    public static int[] roundedMinMaxAge(int[] minMaxAgeFromDB){
+    public PPDP(int ageRangeSize, int diseaseCodeRangeSize, RawDataService rawDataService, AnonymizedDataService anonymizedDataService) throws Exception {
+        this.ageRangeSize = ageRangeSize;
+        this.diseaseCodeRangeSize = diseaseCodeRangeSize;
+        this.rawDataService = rawDataService;
+        this.anonymizedDataService = anonymizedDataService;
+        this.anonymousDiseaseCode = getAnonymousDiseaseCodes(sortedUniqueDiseaseCodes(getDiseaseCodes()));
+    }
+
+    private static int[] roundedMinMaxAge(int[] minMaxAgeFromDB){
         int[] minMax_Age = new int[2];
         minMax_Age[0] = minMaxAgeFromDB[0] - minMaxAgeFromDB[0] % 10;
         minMax_Age[1] = minMaxAgeFromDB[1] + 10 - minMaxAgeFromDB[1] % 10;
         return minMax_Age;
     }
 
-    public static String ageToRange(int age){
+    private static String ageToRange(int age){
         int mod = age % ageRangeSize;
         int min = mod == 0? ageRangeSize : mod;
         return "[" + (age - min + 1) + "-" + (age + ageRangeSize - min) + "]";
     }
 
-    public static ArrayList<String> sortedUniqueDiseaseCodes(String diseaseCodes) throws Exception {
+    private static ArrayList<String> sortedUniqueDiseaseCodes(String diseaseCodes) throws Exception {
         String[] redundantCodes = diseaseCodes.split(",");
         Set<String> uniqueCodes = new HashSet<String>();
         for(String code : redundantCodes){
@@ -47,7 +60,7 @@ public class PPDP {
         return sortedList;
     }
 
-    public static HashMap<String, String> getAnonymousDiseaseCodes(ArrayList<String> sortedDiseaseCodes) throws Exception {
+    private static HashMap<String, String> getAnonymousDiseaseCodes(ArrayList<String> sortedDiseaseCodes) throws Exception {
         HashMap<String, String> encodedDiseaseCodes = new HashMap<String, String>();
         int i = 0, k = 0;
         while(i < sortedDiseaseCodes.size()){
@@ -59,12 +72,12 @@ public class PPDP {
         return encodedDiseaseCodes;
     }
 
-    public static String getDiseaseCodes() throws Exception{
-        String diseaseCodes = RawDataService.getDiseaseCodes();
+    private static String getDiseaseCodes() throws Exception{
+        String diseaseCodes = rawDataService.getDiseaseCodes();
         return diseaseCodes;
     }
 
-    public static String generateAnonymizedDiseaseCode(String diseaseCodes) throws Exception{
+    private static String generateAnonymizedDiseaseCode(String diseaseCodes) throws Exception{
         String[] splittedDiseaseCodes = diseaseCodes.split(",");
         SortedSet<String> uniqueDiseaseCodes = new TreeSet<String>();
         for(String string : splittedDiseaseCodes){
@@ -73,14 +86,14 @@ public class PPDP {
         return Utils.concatStrings(uniqueDiseaseCodes);
     }
 
-    public static AnonymizedData anonymizedDataFromRawData(RawData data) throws Exception {
+    private static AnonymizedData anonymizedDataFromRawData(RawData data) throws Exception {
         return new AnonymizedData(ageToRange(data.getAge()), data.getSex(),
                 generateAnonymizedDiseaseCode(data.getDiseaseCode()),
                 data.getClassInfo(), 1);
     }
 
     public ArrayList<AnonymizedData> generateAnonymizedData() throws Exception{
-        ArrayList<RawData> rawDataList = RawDataService.getRawData();
+        ArrayList<RawData> rawDataList = rawDataService.getRawData();
         ArrayList<AnonymizedData> anonymizedDataList = new ArrayList();
         for(RawData data : rawDataList){
             anonymizedDataList.add(anonymizedDataFromRawData(data));
